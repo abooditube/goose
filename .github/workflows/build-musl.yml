@@ -1,4 +1,4 @@
-name: Build Goose MUSL (Static)
+name: Build Goose for Termux Android aarch64
 
 on:
   workflow_dispatch:
@@ -8,25 +8,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ استنساخ المشروع
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install Rust
+      # 2️⃣ تثبيت Rust مع target aarch64-unknown-linux-musl
+      - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-unknown-linux-musl
 
+      # 3️⃣ تثبيت musl-tools اللازمة للـ static build
       - name: Install musl tools
         run: |
           sudo apt update
-          sudo apt install -y musl-tools
+          sudo apt install -y musl-tools pkg-config build-essential
 
+      # 4️⃣ Build نسخة static مخصصة للـ Termux
       - name: Build static binary
         run: |
-          cargo build --release --target aarch64-unknown-linux-musl
+          cargo build --release --target aarch64-unknown-linux-musl \
+            -j$(nproc) \
+            --locked
 
-      - name: Upload artifact
+      # 5️⃣ رفع الملف التنفيذي كـ artifact جاهز للتحميل
+      - name: Upload Goose binary for Termux
         uses: actions/upload-artifact@v4
         with:
-          name: goose-aarch64-musl
+          name: goose-termux-aarch64
           path: target/aarch64-unknown-linux-musl/release/goose
