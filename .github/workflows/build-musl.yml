@@ -1,0 +1,32 @@
+name: Build Goose MUSL (Static)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+
+      - name: Install musl tools
+        run: |
+          sudo apt update
+          sudo apt install -y musl-tools
+
+      - name: Build static binary
+        run: |
+          cargo build --release --target aarch64-unknown-linux-musl
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: goose-aarch64-musl
+          path: target/aarch64-unknown-linux-musl/release/goose
